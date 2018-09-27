@@ -1,0 +1,104 @@
+package hadoop.mapReduce;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.*;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+
+public class WordCount {
+
+    public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
+        private final static IntWritable one = new IntWritable(1);
+        private Text word = new Text();
+
+        public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+            String line = value.toString();
+            StringTokenizer tokenizer = new StringTokenizer(line);
+//            while (tokenizer.hasMoreTokens()) {
+//                word.set(tokenizer.nextToken());
+//                output.collect(word, one);//生成 <key, (list of values)>
+//            }
+            char[] chars=line.toCharArray();
+            for(char e:chars){
+                word.set(e+"");
+                output.collect(word,one);
+            }
+        }
+    }
+
+    // 此处的values是键值对列表并不是键值对里面的值
+    // 比如：
+    //      [<Bye,1>]或者
+    //      [<World,1>,<World,1>]
+    // 其实上面那个不准确，确切的说是
+    //      key为Bye,value为[1]或者
+    //      key为World,value为[1,1]
+    public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
+        public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+            int sum = 0;
+            while (values.hasNext()) {
+                sum += values.next().get();//values.next().get()获得键值对里面的值
+            }
+            output.collect(key, new IntWritable(sum));//生成键值对<key,sum>
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        JobConf conf = new JobConf(WordCount.class);
+        conf.setJobName("wordcount");
+
+        conf.setOutputKeyClass(Text.class);
+        conf.setOutputValueClass(IntWritable.class);
+
+        conf.setMapperClass(Map.class);
+        conf.setCombinerClass(Reduce.class);
+        conf.setReducerClass(Reduce.class);
+
+        conf.setInputFormat(TextInputFormat.class);
+        conf.setOutputFormat(TextOutputFormat.class);
+
+        FileInputFormat.setInputPaths(conf, new Path("input")); //在整个项目下创建input目录，其中放任意个txt文件
+        FileOutputFormat.setOutputPath(conf, new Path("output"));//输出结果到整个项目下的output目录
+        long a=System.currentTimeMillis();
+        JobClient.runJob(conf);
+        System.out.println("ok,spend "+(System.currentTimeMillis()-a));
+    }
+}
+
+//    Mapper中的map方法通过指定的 TextInputFormat(50行)一次处理一行。然后，它通过StringTokenizer 以空格为分隔符将一行切分为若干tokens，之后，输出< <word>, 1> 形式的键值对。
+//    文件1中的内容：Hello World Bye World
+//    文件2中的内容：Hello Hadoop Goodbye Hadoop
+//    对于示例中的第一个输入，map输出是：
+//          < Hello, 1>
+//          < World, 1>
+//          < Bye, 1>
+//          < World, 1>
+//    第二个输入，map输出是：
+//          < Hello, 1>
+//          < Hadoop, 1>
+//          < Goodbye, 1>
+//          < Hadoop, 1>
+//
+//    WordCount还指定了一个combiner (47行)。因此，每次map运行之后，会对输出按照key进行排序，然后把输出传递给本地的combiner（按照作业的配置与Reducer一样），进行本地聚合。
+//
+//    第一个map的输出是：
+//          < Bye, 1>
+//          < Hello, 1>
+//          < World, 2>
+//    第二个map的输出是：
+//          < Goodbye, 1>
+//          < Hadoop, 2>
+//          < Hello, 1>
+//    Reducer中的reduce方法仅是将每个key本例中就是单词）出现的次数求和。
+//
+//    因此这个作业的输出就是：
+//          < Bye, 1>
+//          < Goodbye, 1>
+//          < Hadoop, 2>
+//          < Hello, 2>
+//          < World, 2>
