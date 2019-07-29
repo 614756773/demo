@@ -14,6 +14,6 @@
   - log4j
 # distributedLock
 > 分布式锁的各种实现
-- [ ] zookeeper实现
+- [x] zookeeper实现
 - [ ] 数据库实现
 - [ ] redis实现 
