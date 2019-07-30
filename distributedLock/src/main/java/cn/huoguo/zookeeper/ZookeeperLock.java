@@ -104,17 +104,6 @@ public class ZookeeperLock implements Lock {
     }
 
     /**
-     * 等待父节点创建完毕
-     */
-    private void ensureParentNodeExist() {
-        try {
-            parentNodeExist.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * 释放锁
      */
     @Override
@@ -127,11 +116,21 @@ public class ZookeeperLock implements Lock {
         }
     }
 
+    /**
+     * 等待父节点创建完毕
+     */
+    private void ensureParentNodeExist() {
+        try {
+            parentNodeExist.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 判断当前节点是否最小.如果是则说明获得锁
      *
-     * @param currentNodeFullName 当前节点的全路径名称,如: /Lock/0000002
+     * @param currentNodeFullName 当前节点的全路径名称,如: /lock/0000002
      * @param children            兄弟节点的名称,如:0000000,0000001,0000003
      */
     private void tryLock(String currentNodeFullName, List<String> children, CountDownLatch latch) throws KeeperException, InterruptedException {
