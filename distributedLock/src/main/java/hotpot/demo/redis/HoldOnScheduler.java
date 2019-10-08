@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 public class HoldOnScheduler implements Runnable{
     private static final Logger log = LoggerFactory.getLogger(HoldOnScheduler.class);
 
+    private RedisHelper redisHelper;
+
     private String key;
 
     private boolean schedulerOpen;
@@ -23,7 +25,8 @@ public class HoldOnScheduler implements Runnable{
     // key的新过期时间，单位秒
     private static final int EXTEND_TIME = 20;
 
-    public HoldOnScheduler(String key) {
+    public HoldOnScheduler(String key, RedisHelper redisHelper) {
+        this.redisHelper = redisHelper;
         this.key = key;
         this.schedulerOpen = true;
     }
@@ -35,10 +38,11 @@ public class HoldOnScheduler implements Runnable{
     @Override
     public void run() {
         while (schedulerOpen) {
-            if (RedisHelper.expire(key, EXTEND_TIME)) {
+            if (redisHelper.expire(key, EXTEND_TIME)) {
                 log.info("已重置`{}`TTL为{}秒", key, EXTEND_TIME);
             } else {
                 log.info("为`{}`续期失败，该key已被删除，定时任务自动关闭", key);
+                break;
             }
             try {
                 Thread.sleep(INTERVAL_TIME * 1000);

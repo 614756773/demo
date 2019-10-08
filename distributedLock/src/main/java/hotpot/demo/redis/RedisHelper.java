@@ -7,37 +7,30 @@ import redis.clients.jedis.Jedis;
  * @since 2019/9/30
  */
 public class RedisHelper {
-    private static final String HOST = "localhost";
+    private final String HOST = "localhost";
 
-    private static final Integer PORT = 6379;
+    private final Integer PORT = 6379;
 
-    private static Jedis jedis = null;
+    private Jedis jedis;
 
-    private static Jedis getJedis() {
-        if (jedis == null) {
-            synchronized (RedisHelper.class) {
-                if (jedis == null) {
-                    jedis = new Jedis(HOST, PORT);
-                }
-            }
-        }
-        return jedis;
+    public RedisHelper() {
+        jedis = new Jedis(HOST, PORT);
     }
 
     /**
      *
      * @return true-设置成功,false-设置失败
      */
-    public static boolean setnx(String key, String value) {
-        Long result = getJedis().setnx(key, value);
+    public boolean setnx(String key, String value) {
+        Long result = jedis.setnx(key, value);
         return result == 1;
     }
 
     /**
      * 设置过期时间
      */
-    public static boolean expire(String key, int extendTime) {
-        Long expire = getJedis().expire(key, extendTime);
+    public boolean expire(String key, int extendTime) {
+        Long expire = jedis.expire(key, extendTime);
         return expire == 1;
     }
 
@@ -45,11 +38,11 @@ public class RedisHelper {
      * 使用lua脚本删除key
      * lua脚本参考https://www.runoob.com/redis/redis-scripting.html
      */
-    public static boolean luaDel(String key, String value) {
+    public boolean luaDel(String key, String value) {
         String luaScript = "if redis.call('get',KEYS[1]) == ARGV[1] " +
                 "then return redis.call('del', KEYS[1]) " +
                 "else return 0 end";
-        Long result = (Long) getJedis().eval(luaScript, 1, key, value);
+        Long result = (Long) jedis.eval(luaScript, 1, key, value);
         return result == 1;
     }
 }
