@@ -26,7 +26,7 @@
 > 分布式锁的各种实现
 - [x] zookeeper实现
 - [x] 数据库实现
-- [ ] redis实现 
+- [x] redis实现 
 ##### OAuth
 > 基于github的oauth认证
 ##### websocket
