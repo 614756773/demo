@@ -29,3 +29,6 @@
 - [ ] redis实现 
 ##### OAuth
 > 基于github的oauth认证
+##### websocket
+- 使用stomp协议
+- 使用websocket协议
