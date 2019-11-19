@@ -1,8 +1,8 @@
 # 呼吁
 - 希望本仓库有更多的demo，便于参考学习，欢迎大家fork，pull request
 - 上传的demo需要满足以下两点
-    - 有readme
-    - 能够一键运行
+    - 有README
+    - 能够运行
 ---
 <BR><BR>
 
@@ -27,7 +27,7 @@
 ###  Nio
 > 服务端使用的nio，客户端使用普通的socket
 
-###  distributedLock
+###  DistributedLock
 > 分布式锁的各种实现
 - [x] zookeeper实现
 - [x] 数据库实现
@@ -36,8 +36,10 @@
 ### OAuth
 > 基于github的oauth认证
 
-### websocket
+### Websocket
 - 使用stomp协议
 - 使用websocket协议
 
-### redis消息订阅
+### Redis消息订阅
+
+### RabbitMQ
