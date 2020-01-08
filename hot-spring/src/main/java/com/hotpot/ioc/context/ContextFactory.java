@@ -20,7 +20,7 @@ public class ContextFactory {
         List<EnhanceHandler> enhanceHandlers = new ArrayList<>();
         Map<String, Class> classMap = ClassScanner.listClass("com.hotpot.ioc.context.enhance");
         classMap.values().stream()
-                .filter(EnhanceHandler.class::isAssignableFrom)
+                .filter(cls -> EnhanceHandler.class.isAssignableFrom(cls) && cls != EnhanceHandler.class)
                 .forEach(clazz -> {
                     try {
                         enhanceHandlers.add((EnhanceHandler) clazz.newInstance());
