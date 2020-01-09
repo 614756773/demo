@@ -1,17 +1,19 @@
 package com.hotpot.ioc.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * @author qinzhu
  * @since 2020/1/8
  */
 public class ClassScanner {
+
     /**
      * (packageName, (className, class))
      */
@@ -26,11 +28,24 @@ public class ClassScanner {
 
     private static Map<String, Class> scanClass(String packageName) {
         URL url = ClassLoader.getSystemResource(packageName.replace(".", "/"));
+        String protocol = url.getProtocol();
+        if ("file".equals(protocol)) {
+            return fileModelScan(url);
+        } else if ("jar".equals(protocol)) {
+            return jarModelScan(url);
+        }
+        throw new RuntimeException("不支持的类型");
+    }
+
+    /**
+     * 扫描文件夹中的class文件
+     */
+    private static Map<String, Class> fileModelScan(URL url) {
         File rootFile = new File(url.getPath());
         List<String> classList = new ArrayList<>();
-        doScanClass(classList, rootFile);
+        doScanClassFile(classList, rootFile);
 
-        Map<String, Class> result = new HashMap<>((int)(classList.size() / 0.75) + 1);
+        Map<String, Class> result = new HashMap<>((int) (classList.size() / 0.75) + 1);
         classList.forEach(className -> {
             try {
                 result.put(className, Class.forName(className));
@@ -38,15 +53,44 @@ public class ClassScanner {
                 throw new RuntimeException(e);
             }
         });
-
         return result;
     }
 
-    private static void doScanClass(List<String> classList, File file) {
+    /**
+     * 扫描jar包中的class文件
+     */
+    private static Map<String, Class> jarModelScan(URL url) {
+        JarFile jarFile;
+        try {
+            jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Map<String, Class> result = new HashMap<>(16);
+        Enumeration<JarEntry> entry = jarFile.entries();
+        JarEntry jarEntry;
+        while (entry.hasMoreElements()) {
+            jarEntry = entry.nextElement();
+            // name的格式形如 net/sf/cglib/util/SorterTemplate.class
+            String name = jarEntry.getName();
+            if (!name.endsWith(".class")) {
+                continue;
+            }
+            name = name.replace("/", ".").replace(".class", "");
+            try {
+                result.put(name, Class.forName(name));
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    private static void doScanClassFile(List<String> classList, File file) {
         File[] files = file.listFiles(f -> f.isFile() && f.getName().endsWith(".class") || f.isDirectory());
         for (File f : files != null ? files : new File[0]) {
             if (f.isDirectory()) {
-                doScanClass(classList, f);
+                doScanClassFile(classList, f);
             } else {
                 classList.add(convertToClassName(f.getPath()));
             }

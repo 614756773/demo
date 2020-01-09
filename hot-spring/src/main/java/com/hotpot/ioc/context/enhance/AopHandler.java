@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author qinzhu
@@ -18,15 +19,19 @@ public class AopHandler implements EnhanceHandler {
         return -1;
     }
 
+    public static void main(String[] args) {
+        boolean matches = Pattern.matches("com\\.hotpot\\..+", "com.hotpot.test");
+        System.out.println(matches);
+    }
     @Override
     public void handle(Map<String, Object> beanMap) {
         List<Class> aspectClassList = new ArrayList<>();
         filterAspectClass(beanMap, aspectClassList);
 
         for (Class clazz : aspectClassList) {
-            // 切入点的缓存，键值对形如("pointcut()", "com.hotpot.test.*")
+            // 切入点的缓存，键值对形如("pointcut()", "com\.hotpot\.test\..")
             Map<String, String> pointcutMap = new HashMap<>(16);
-            // 代理方法的缓存，键值对形如("Before", method)，("Around", method)
+            // 代理方法的缓存，键值对形如("Before", list<method>)，("Around", list<method>)
             Map<String, List<Method>> methodMap = new HashMap<>(16);
             Method[] methods = clazz.getMethods();
             for (Method method : methods) {
@@ -40,25 +45,22 @@ public class AopHandler implements EnhanceHandler {
                 Around around = method.getAnnotation(Around.class);
                 After after = method.getAnnotation(After.class);
                 if (before != null) {
-                    putMethod(methodMap, method, "Before");
+                    cacheMethod(methodMap, method, "Before");
                 }
                 if (around != null) {
-                    putMethod(methodMap, method, "Around");
+                    cacheMethod(methodMap, method, "Around");
                 }
                 if (after != null) {
-                    putMethod(methodMap, method, "After");
+                    cacheMethod(methodMap, method, "After");
                 }
                 // TODO
             }
         }
     }
 
-    private void putMethod(Map<String, List<Method>> methodMap, Method method, String a) {
-        methodMap.computeIfAbsent(a, key -> {
-            ArrayList<Method> list = new ArrayList<>();
-            list.add(method);
-            return list;
-        });
+    private void cacheMethod(Map<String, List<Method>> methodMap, Method method, String name) {
+        List<Method> methods = methodMap.computeIfAbsent(name, k -> new ArrayList<>());
+        methods.add(method);
     }
 
     /**

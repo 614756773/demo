@@ -1,5 +1,6 @@
 package com.hotpot.ioc;
 
+import com.hotpot.ioc.utils.ClassScanner;
 import net.sf.cglib.proxy.Enhancer;
 
 /**
@@ -8,6 +9,11 @@ import net.sf.cglib.proxy.Enhancer;
  */
 public class Test {
     public static void main(String[] args) {
+//        cglibTest();
+        ClassScanner.listClass("net.sf.cglib");
+    }
+
+    private static void cglibTest() {
         ServiceProxy proxy = new ServiceProxy();
 
         Enhancer enhancer = new Enhancer();
