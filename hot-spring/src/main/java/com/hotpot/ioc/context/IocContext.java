@@ -3,6 +3,7 @@ package com.hotpot.ioc.context;
 import com.hotpot.ioc.annotation.Autowired;
 import com.hotpot.ioc.annotation.Component;
 import com.hotpot.ioc.context.enhance.EnhanceHandler;
+import com.hotpot.ioc.model.BeanMetadata;
 import com.hotpot.ioc.utils.ClassScanner;
 import com.sun.istack.internal.Nullable;
 
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 public class IocContext implements ContextInterface {
     private final String basePackage = "com.hotpot.test";
 
-    private Map<String, Object> beanMap = new HashMap<>();
+    private Map<String, BeanMetadata> beanMap = new HashMap<>();
 
     private List<EnhanceHandler> enhanceHandlers;
 
@@ -35,7 +36,7 @@ public class IocContext implements ContextInterface {
 
     @SuppressWarnings("unchecked")
     <T> T getBean(Class<T> clazz) {
-        return (T) beanMap.get(clazz.getName());
+        return (T) beanMap.get(clazz.getName()).getBeanInstance();
     }
 
     @Override
@@ -46,12 +47,14 @@ public class IocContext implements ContextInterface {
         instanceSingleBean(classMap.keySet());
         // 3.子类实现更丰富的操作（比如aop，权限校验等）
         this.enhanceHandlers.forEach(e -> e.handle(this.beanMap));
-
+        // 使用后就手动释放，毕竟增强处理器只会使用一次
+        this.enhanceHandlers = null;
     }
 
     @Override
     public void assembleBean() {
-        beanMap.forEach((className, bean) -> {
+        beanMap.forEach((className, beanMetadata) -> {
+            Object bean = beanMetadata.getBeanInstance();
             for (Field field : bean.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 Autowired annotation = field.getAnnotation(Autowired.class);
@@ -63,7 +66,7 @@ public class IocContext implements ContextInterface {
                     injectBeanName = field.getType().getName();
                 }
                 try {
-                    field.set(bean, beanMap.get(injectBeanName));
+                    field.set(bean, beanMap.get(injectBeanName).getBeanInstance());
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
@@ -87,7 +90,7 @@ public class IocContext implements ContextInterface {
             Object bean = aClass.newInstance();
             Class<?>[] interfaces = aClass.getInterfaces();
             Class<?> superclass = aClass.getSuperclass();
-            cacheBean(className, bean, interfaces, superclass);
+            cacheBean(className, BeanMetadata.create(className, aClass, bean), interfaces, superclass);
         }
     }
 
@@ -96,7 +99,7 @@ public class IocContext implements ContextInterface {
      * 其中key为这个bean的类名、上级父类名、上级接口名
      * value为bean
      */
-    private void cacheBean(String beanClassName, Object bean, @Nullable Class<?>[] interfaces, @Nullable Class<?> superclass) {
+    private void cacheBean(String beanClassName, BeanMetadata beanMetadata, @Nullable Class<?>[] interfaces, @Nullable Class<?> superclass) {
         List<String> list = new ArrayList<>();
         list.add(beanClassName);
         if (interfaces != null && interfaces.length != 0) {
@@ -113,7 +116,7 @@ public class IocContext implements ContextInterface {
                         "- " + beanClassName + "\n" +
                         "- " + existedBean.getClass().getName());
             }
-            beanMap.put(className, bean);
+            beanMap.put(className, beanMetadata);
         });
     }
 }

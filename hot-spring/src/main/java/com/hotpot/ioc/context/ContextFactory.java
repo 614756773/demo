@@ -3,7 +3,6 @@ package com.hotpot.ioc.context;
 import com.hotpot.ioc.context.enhance.EnhanceHandler;
 import com.hotpot.ioc.utils.ClassScanner;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
