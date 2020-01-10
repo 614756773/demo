@@ -1,6 +1,7 @@
 package com.hotpot.ioc.context.enhance;
 
 import com.hotpot.aop.annotation.*;
+import com.hotpot.aop.model.PointcutMetadata;
 import com.hotpot.ioc.model.BeanMetadata;
 
 import java.lang.reflect.Method;
@@ -29,7 +30,7 @@ public class AopHandler implements EnhanceHandler {
 
         for (Class clazz : aspectClassList) {
             // 切入点的缓存，键值对形如("pointcut()", "com\.hotpot\.test\..")
-            Map<String, String> pointcutMap = new HashMap<>(16);
+            Map<String, PointcutMetadata> pointcutMap = new HashMap<>(16);
             Method[] methods = clazz.getMethods();
             Map<String, Method> beforeMethodMap = new HashMap<>(8);
             Map<String, Method> aroundMethodMap = new HashMap<>(8);
@@ -37,7 +38,7 @@ public class AopHandler implements EnhanceHandler {
             for (Method method : methods) {
                 Pointcut pointcut = method.getAnnotation(Pointcut.class);
                 if (pointcut != null) {
-                    pointcutMap.put(method.getName() + "()", pointcut.value());
+                    pointcutMap.put(method.getName() + "()", PointcutMetadata.of(pointcut));
                     continue;
                 }
 
@@ -65,17 +66,17 @@ public class AopHandler implements EnhanceHandler {
      * @param pointcutMap key -> 名称，形如"pointcut()"     value -> 正则表达式，形如"com\\.hotpot\\.test\\..+"
      * @param methodMap key -> 切入点名称，形如"pointcut()"       value -> Method实例
      */
-    private void proxy(Map<String, String> pointcutMap, Map<String, Method> methodMap) {
-        methodMap.forEach((pointcut, method) -> {
-            this.beanMap.keySet().stream()
-                    .filter(className -> {
-                        if (beanMap.get(className).getClassInstance().isAnnotationPresent(Aspect.class)) {
-                            return false;
-                        }
-                        return Pattern.matches(pointcutMap.get(pointcut), className);
-                    })
-                    .forEach(className -> proxyBean(className, method));
-        });
+    private void proxy(Map<String, PointcutMetadata> pointcutMap, Map<String, Method> methodMap) {
+        methodMap.forEach((pointcut, method) -> this.beanMap.keySet().stream()
+                .filter(className -> {
+                    if (beanMap.get(className).getClassInstance().isAnnotationPresent(Aspect.class)) {
+                        return false;
+                    }
+                    PointcutMetadata pointcutMetadata = pointcutMap.get(pointcut);
+                    return Pattern.matches(pointcutMetadata.getClassRegex(), className);
+                })
+                .forEach(className -> proxyBean(className, method))
+        );
     }
 
     /**
@@ -85,13 +86,6 @@ public class AopHandler implements EnhanceHandler {
         System.out.println("需要代理的类有：" + className);
     }
 
-
-    /**
-     * 从beanMap中获取能够匹配的bean的名称 TODO
-     */
-    private List<String> match(Map<String, Object> beanMap, String regex) {
-        return null;
-    }
 
     /**
      * 筛选出切面类

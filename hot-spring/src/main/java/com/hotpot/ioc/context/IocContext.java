@@ -27,11 +27,17 @@ public class IocContext implements ContextInterface {
         this.enhanceHandlers = enhanceHandlers;
         this.enhanceHandlers.sort(Comparator.comparingInt(EnhanceHandler::getPriority));
         try {
+            // 1.注册bean
             registerBean();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        // 2.注入bean
         assembleBean();
+        // 3.子类实现更丰富的操作（比如aop，权限校验等）
+        this.enhanceHandlers.forEach(e -> e.handle(this.beanMap));
+        // 使用后就手动释放，毕竟增强处理器只会使用一次
+        this.enhanceHandlers = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -45,10 +51,6 @@ public class IocContext implements ContextInterface {
         Map<String, Class> classMap = ClassScanner.listClass(basePackage);
         // 2.反射实例化
         instanceSingleBean(classMap.keySet());
-        // 3.子类实现更丰富的操作（比如aop，权限校验等）
-        this.enhanceHandlers.forEach(e -> e.handle(this.beanMap));
-        // 使用后就手动释放，毕竟增强处理器只会使用一次
-        this.enhanceHandlers = null;
     }
 
     @Override

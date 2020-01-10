@@ -13,7 +13,7 @@ import com.hotpot.ioc.annotation.Component;
 @Aspect
 public class DemoAspect {
 
-    @Pointcut("com\\.hotpot\\.test\\..+")
+    @Pointcut(classRegex = "com\\.hotpot\\.test\\..+", methodRegex = "save\\(.+\\)")
     public void pointcut() {
 
     }

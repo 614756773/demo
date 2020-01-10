@@ -13,7 +13,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Pointcut {
     /**
-     * 切入点表达式
+     * 类名的正则表达式
      */
-    String value();
+    String classRegex();
+
+    String methodRegex() default ".+\\(\\)";
 }
