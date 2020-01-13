@@ -5,7 +5,7 @@ package com.hotpot.chainmodel;
  * @since 2020/1/10
  */
 public interface Node {
-    Object process();
+    Object process(NodeChain chain);
 
     default Object before() {
         return null;

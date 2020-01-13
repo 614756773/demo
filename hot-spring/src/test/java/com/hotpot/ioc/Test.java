@@ -1,7 +1,14 @@
 package com.hotpot.ioc;
 
+import com.hotpot.chainmodel.Node;
+import com.hotpot.chainmodel.NodeA;
+import com.hotpot.chainmodel.NodeB;
+import com.hotpot.chainmodel.NodeChain;
 import com.hotpot.ioc.utils.ClassScanner;
 import net.sf.cglib.proxy.Enhancer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author qinzhu
@@ -9,8 +16,24 @@ import net.sf.cglib.proxy.Enhancer;
  */
 public class Test {
     public static void main(String[] args) {
+//        cglibChainTest();
         cglibTest();
 //        ClassScanner.listClass("net.sf.cglib");
+    }
+
+    private static void cglibChainTest() {
+        List<Node> nodeList = new ArrayList<>();
+        nodeList.add(new NodeA());
+        nodeList.add(new NodeB());
+        NodeChain chain = new NodeChain(nodeList);
+
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(Service.class);
+        enhancer.setCallback(chain);
+
+        Service service = (Service) enhancer.create();
+        String result = service.run();
+        System.err.println(result);
     }
 
     private static void cglibTest() {
@@ -20,14 +43,7 @@ public class Test {
         enhancer.setCallback(proxy);
 
         Service service = (Service)enhancer.create();
-        service.run();
-
-        BProxy bproxy = new BProxy();
-        Enhancer enhancer1 = new Enhancer();
-        enhancer1.setSuperclass(Service.class);
-        enhancer1.setCallback(bproxy);
-
-        Service service1 = (Service)enhancer1.create();
-        service1.run();
+        String result = service.run();
+        System.out.println(result);
     }
 }

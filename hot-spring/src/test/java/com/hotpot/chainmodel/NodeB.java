@@ -4,7 +4,7 @@ package com.hotpot.chainmodel;
  * @author qinzhu
  * @since 2020/1/10
  */
-public class NodeA implements Node {
+public class NodeB implements Node {
 
     @Override
     public Object process(NodeChain chain) {
@@ -17,13 +17,13 @@ public class NodeA implements Node {
 
     @Override
     public Object before() {
-        System.out.println("NodeA代理：before");
+        System.out.println("NodeB代理：before");
         return null;
     }
 
     @Override
     public Object after() {
-        System.out.println("NodeA代理：after");
+        System.out.println("NodeB代理：after");
         return null;
     }
 }

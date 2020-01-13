@@ -5,14 +5,20 @@ import net.sf.cglib.proxy.MethodProxy;
 
 import java.lang.reflect.Method;
 
+/**
+ * 只代理名称为run的方法
+ */
 public class ServiceProxy implements MethodInterceptor {
 
     @Override
-    public Object intercept(Object object, Method method, Object[] objects, MethodProxy proxy) throws Throwable {
-        System.out.println("Before Method Invoke");
-        proxy.invokeSuper(object, objects);
-        System.out.println("After Method Invoke");
-        return object;
+    public Object intercept(Object target, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+        if (method.getName().equals("run")) {
+            System.out.println("Before Method Invoke");
+            Object result = proxy.invokeSuper(target, args);
+            System.out.println("After Method Invoke");
+            return result;
+        }
+        return proxy.invokeSuper(target, args);
     }
     
 }

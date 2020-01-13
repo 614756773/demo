@@ -21,6 +21,8 @@ public class IocContext implements ContextInterface {
 
     private Map<String, BeanMetadata> beanMap = new HashMap<>();
 
+    private Map<String, Class> classMap;
+
     private List<EnhanceHandler> enhanceHandlers;
 
     protected IocContext(List<EnhanceHandler> enhanceHandlers) {
@@ -35,7 +37,7 @@ public class IocContext implements ContextInterface {
         // 2.注入bean
         assembleBean();
         // 3.子类实现更丰富的操作（比如aop，权限校验等）
-        this.enhanceHandlers.forEach(e -> e.handle(this.beanMap));
+        this.enhanceHandlers.forEach(e -> e.handle(this.beanMap, this.classMap));
         // 使用后就手动释放，毕竟增强处理器只会使用一次
         this.enhanceHandlers = null;
     }
@@ -48,9 +50,9 @@ public class IocContext implements ContextInterface {
     @Override
     public void registerBean() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         // 1.扫描class文件
-        Map<String, Class> classMap = ClassScanner.listClass(basePackage);
+        this.classMap = ClassScanner.listClass(basePackage);
         // 2.反射实例化
-        instanceSingleBean(classMap.keySet());
+        instanceSingleBean(this.classMap.keySet());
     }
 
     @Override

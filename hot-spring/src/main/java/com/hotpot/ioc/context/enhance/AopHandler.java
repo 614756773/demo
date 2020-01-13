@@ -3,7 +3,9 @@ package com.hotpot.ioc.context.enhance;
 import com.hotpot.aop.annotation.*;
 import com.hotpot.aop.model.PointcutMetadata;
 import com.hotpot.ioc.model.BeanMetadata;
+import com.hotpot.ioc.model.MethodGroup;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,14 +20,22 @@ import java.util.regex.Pattern;
 public class AopHandler implements EnhanceHandler {
     private Map<String, BeanMetadata> beanMap;
 
+    private Map<String, Class> classMap;
+
+    /**
+     * key -> origin bean名称，value 需要被代理的方法
+     */
+    private Map<String, MethodGroup> beanMethodMap = new HashMap<>();
+
     @Override
     public int getPriority() {
         return -1;
     }
 
     @Override
-    public void handle(Map<String, BeanMetadata> beanMap) {
+    public void handle(Map<String, BeanMetadata> beanMap, Map<String, Class> classMap) {
         this.beanMap = beanMap;
+        this.classMap = classMap;
         List<Class<?>> aspectClassList = searchAspectClass();
 
         for (Class clazz : aspectClassList) {
@@ -55,19 +65,20 @@ public class AopHandler implements EnhanceHandler {
                     afterMethodMap.put(after.value(), method);
                 }
             }
-            proxy(pointcutMap, beforeMethodMap);
-            proxy(pointcutMap, aroundMethodMap);
-            proxy(pointcutMap, afterMethodMap);
+            proxy(pointcutMap, beforeMethodMap, Before.class);
+            proxy(pointcutMap, aroundMethodMap, Around.class);
+            proxy(pointcutMap, afterMethodMap, After.class);
         }
     }
 
     /**
      * 遍历bean，找到匹配切入点的bean
      * @param pointcutMap key -> 名称，形如"pointcut()"     value -> 正则表达式，形如"com\\.hotpot\\.test\\..+"
-     * @param methodMap key -> 切入点名称，形如"pointcut()"       value -> Method实例
+     * @param proxyMethods key -> 切入点名称，形如"pointcut()"       value -> proxyMethod实例
      */
-    private void proxy(Map<String, PointcutMetadata> pointcutMap, Map<String, Method> methodMap) {
-        methodMap.forEach((pointcut, method) -> this.beanMap.keySet().stream()
+    private void proxy(Map<String, PointcutMetadata> pointcutMap, Map<String, Method> proxyMethods, Class<? extends Annotation> annotationClass) {
+        proxyMethods.forEach((pointcut, proxyMethod) -> this.beanMap.keySet().stream()
+                // 保留需要代理的bean
                 .filter(className -> {
                     if (beanMap.get(className).getClassInstance().isAnnotationPresent(Aspect.class)) {
                         return false;
@@ -75,9 +86,24 @@ public class AopHandler implements EnhanceHandler {
                     PointcutMetadata pointcutMetadata = pointcutMap.get(pointcut);
                     return Pattern.matches(pointcutMetadata.getClassRegex(), className);
                 })
-                .forEach(className -> proxyBean(className, method))
+                // bean作为维度，
+                .forEach(className -> {
+                    Class clazz = this.classMap.get(className);
+                    PointcutMetadata pointcutMetadata = pointcutMap.get(pointcut);
+                    for (Method m : clazz.getMethods()) {
+                        // TODO - 1. 正则匹配的时候应该还要去匹配参数
+                        // TODO - 2. 有bug，会把service接口和serviceImpl的同一个方法都代理了。。。
+                        // TODO - 2续. 应该只代理serviceImpl的方法，可能还要去改ioc的实现，可以考虑给接口bean加个标志
+                        System.out.println(pointcutMetadata.getMethodRegex() + "  ::::  " + m.getName()); // TODO RM
+                        if (Pattern.matches(pointcutMetadata.getMethodRegex(), m.getName())) {
+                            MethodGroup methodGroup = this.beanMethodMap.computeIfAbsent(className, key -> new MethodGroup());
+                            methodGroup.addMethod(annotationClass, m.getName(), m.getParameterTypes(), proxyMethod);
+                        }
+                    }
+                })
         );
     }
+
 
     /**
      * 代理bean TODO
