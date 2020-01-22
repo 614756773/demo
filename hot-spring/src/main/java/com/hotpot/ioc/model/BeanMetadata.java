@@ -44,4 +44,14 @@ public class BeanMetadata {
     public Object getBeanInstance() {
         return beanInstance;
     }
+
+    /**
+     * 替换bean实例，做aop时，使用动态代理的对象来替换原对象
+     */
+    public void replaceBeanInstance(Object proxyInstance) {
+        if (proxyInstance instanceof SuppressWarnings) {
+            // TODO
+        }
+        this.beanInstance = proxyInstance;
+    }
 }

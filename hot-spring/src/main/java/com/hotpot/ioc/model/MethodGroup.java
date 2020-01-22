@@ -14,11 +14,13 @@ import java.util.Map;
 /**
  * @author qinzhu
  * @since 2020/1/13
+ * 一个bean可能会被前、中、后三种模式代理
+ * 而一个方法被前置代理时也有可能会被前置增强两次，同理中、后代理也是一样的
  */
 public class MethodGroup {
     /**
      * value -> 前置织入的方法
-     * key -> 被代理方法的标志，由方法名 + 参数名组合而成，如下：
+     * key -> 原方法的标志，由方法名 + 参数名组合而成，如下：
      * run:java.lang.String,java.lang,Integer 或者 run:
      */
     private Map<String, List<Method>> beforeMethods;
@@ -51,7 +53,7 @@ public class MethodGroup {
      *
      * @param targetMethodName 被代理方法的名称
      * @param parameterTypes 被代理方法的参数类型
-     * @param proxyMethod 需要前置织入的method
+     * @param proxyMethod 需要织入的method
      */
     public void addMethod(Class<? extends Annotation> annotationClass, String targetMethodName, Class<?>[] parameterTypes, Method proxyMethod) {
         if (annotationClass == Before.class) {

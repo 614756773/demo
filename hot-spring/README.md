@@ -10,13 +10,17 @@
 - com.hotpot.ioc.context
     - IOC的核心实现，主要分为三步：<BR>
     1.扫描<BR>2.实例化<BR>3.依赖注入
+#### 待改进
+主要是在扫描这一块有点问题，目前必须在`IocContext`类中写死`basePackage`，
+还没想到怎么做成spring boot那样自动扫描
+
 ### aop说明
 - 切入点的表达式我直接做成了使用正则表达式，比如
 ```java
 @com.hotpot.ioc.annotation.Component
 @com.hotpot.aop.annotation.Aspect
 public class AopTest {
-    @com.hotpot.aop.annotation.Pointcut("com\\.hotpot\\..+")
+    @Pointcut(classRegex = "com\\.hotpot\\.test\\..+", methodRegex = "save\\(.*\\)")
     public void pointcut(){}
     
     @com.hotpot.aop.annotation.Before("pointcut()")
@@ -25,6 +29,8 @@ public class AopTest {
     }
 }
 ```
-### 待改进
-主要是在扫描这一块有点问题，目前必须在`IocContext`类中写死`basePackage`，
-还没想到怎么做成spring boot那样自动扫描
+#### 待改进
+- 切入点的表达式不使用正则，改成spring那样
+- 切入点表达式中，应该还能够匹配参数，
+目前没有实现，即使使用正则表达式也不行
+

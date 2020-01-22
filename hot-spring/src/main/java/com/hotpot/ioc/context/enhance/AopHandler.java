@@ -1,9 +1,11 @@
 package com.hotpot.ioc.context.enhance;
 
+import com.hotpot.aop.MethodInterceptorChain;
 import com.hotpot.aop.annotation.*;
 import com.hotpot.aop.model.PointcutMetadata;
 import com.hotpot.ioc.model.BeanMetadata;
 import com.hotpot.ioc.model.MethodGroup;
+import net.sf.cglib.proxy.Enhancer;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -41,10 +43,10 @@ public class AopHandler implements EnhanceHandler {
         for (Class clazz : aspectClassList) {
             // 切入点的缓存，键值对形如("pointcut()", "com\.hotpot\.test\..")
             Map<String, PointcutMetadata> pointcutMap = new HashMap<>(16);
+            Map<String, Method> beforeMethodMap = new HashMap<>(16);
+            Map<String, Method> aroundMethodMap = new HashMap<>(16);
+            Map<String, Method> afterMethodMap = new HashMap<>(16);
             Method[] methods = clazz.getMethods();
-            Map<String, Method> beforeMethodMap = new HashMap<>(8);
-            Map<String, Method> aroundMethodMap = new HashMap<>(8);
-            Map<String, Method> afterMethodMap = new HashMap<>(8);
             for (Method method : methods) {
                 Pointcut pointcut = method.getAnnotation(Pointcut.class);
                 if (pointcut != null) {
@@ -65,37 +67,37 @@ public class AopHandler implements EnhanceHandler {
                     afterMethodMap.put(after.value(), method);
                 }
             }
-            proxy(pointcutMap, beforeMethodMap, Before.class);
-            proxy(pointcutMap, aroundMethodMap, Around.class);
-            proxy(pointcutMap, afterMethodMap, After.class);
+            findBeanMethodForProxy(pointcutMap, beforeMethodMap, Before.class);
+            findBeanMethodForProxy(pointcutMap, aroundMethodMap, Around.class);
+            findBeanMethodForProxy(pointcutMap, afterMethodMap, After.class);
+            proxyBean(beanMethodMap);
         }
     }
 
     /**
-     * 遍历bean，找到匹配切入点的bean
-     * @param pointcutMap key -> 名称，形如"pointcut()"     value -> 正则表达式，形如"com\\.hotpot\\.test\\..+"
+     * 遍历bean，找到匹配切入点的method，缓存在{@code beanMethodMap}中
+     * @param pointcutMap key -> 名称，形如"pointcut()"     value -> PointcutMetadata
      * @param proxyMethods key -> 切入点名称，形如"pointcut()"       value -> proxyMethod实例
      */
-    private void proxy(Map<String, PointcutMetadata> pointcutMap, Map<String, Method> proxyMethods, Class<? extends Annotation> annotationClass) {
+    private void findBeanMethodForProxy(Map<String, PointcutMetadata> pointcutMap, Map<String, Method> proxyMethods, Class<? extends Annotation> annotationClass) {
         proxyMethods.forEach((pointcut, proxyMethod) -> this.beanMap.keySet().stream()
-                // 保留需要代理的bean
+                // 筛选出需要代理的bean
                 .filter(className -> {
+                    if (classMap.get(className).isInterface()) {
+                        return false;
+                    }
                     if (beanMap.get(className).getClassInstance().isAnnotationPresent(Aspect.class)) {
                         return false;
                     }
                     PointcutMetadata pointcutMetadata = pointcutMap.get(pointcut);
                     return Pattern.matches(pointcutMetadata.getClassRegex(), className);
                 })
-                // bean作为维度，
+                // bean作为维度
                 .forEach(className -> {
                     Class clazz = this.classMap.get(className);
                     PointcutMetadata pointcutMetadata = pointcutMap.get(pointcut);
                     for (Method m : clazz.getMethods()) {
-                        // TODO - 1. 正则匹配的时候应该还要去匹配参数
-                        // TODO - 2. 有bug，会把service接口和serviceImpl的同一个方法都代理了。。。
-                        // TODO - 2续. 应该只代理serviceImpl的方法，可能还要去改ioc的实现，可以考虑给接口bean加个标志
-                        System.out.println(pointcutMetadata.getMethodRegex() + "  ::::  " + m.getName()); // TODO RM
-                        if (Pattern.matches(pointcutMetadata.getMethodRegex(), m.getName())) {
+                        if (Pattern.matches(pointcutMetadata.getMethodRegex(), m.getName() + "()")) {
                             MethodGroup methodGroup = this.beanMethodMap.computeIfAbsent(className, key -> new MethodGroup());
                             methodGroup.addMethod(annotationClass, m.getName(), m.getParameterTypes(), proxyMethod);
                         }
@@ -104,12 +106,22 @@ public class AopHandler implements EnhanceHandler {
         );
     }
 
-
     /**
      * 代理bean TODO
      */
-    private void proxyBean(String className, Method method) {
-        System.out.println("需要代理的类有：" + className);
+    private void proxyBean(Map<String, MethodGroup> beanMethodMap) {
+        beanMethodMap.forEach((beanName, methodGroup) -> {
+            BeanMetadata beanMetadata = beanMap.get(beanName);
+            Class clazz = beanMetadata.getClassInstance();
+            Map<String, List<Method>> map = methodGroup.getBeforeMethods();
+            map.forEach((methodName, methods) -> {
+                MethodInterceptorChain chain = new MethodInterceptorChain(methods, null, null);
+                Enhancer enhancer = new Enhancer();
+                enhancer.setSuperclass(clazz);
+                enhancer.setCallback(chain);
+                beanMetadata.replaceBeanInstance(enhancer.create());
+            });
+        });
     }
 
 

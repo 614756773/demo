@@ -27,9 +27,9 @@ public class NodeChain implements MethodInterceptor{
 
     public Object process() {
         index++;
-        if (index > proxyNodes.size()) {
-            return target;
-        }
+//        if (index > proxyNodes.size()) {
+//            return target;
+//        }
 
         if (index == proxyNodes.size()) {
             try {
@@ -48,7 +48,6 @@ public class NodeChain implements MethodInterceptor{
         this.target = target;
         this.args = args;
         this.methodProxy = methodProxy;
-        Object result = process();
-        return result;
+        return process();
     }
 }
