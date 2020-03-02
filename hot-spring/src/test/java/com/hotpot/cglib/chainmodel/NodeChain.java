@@ -1,4 +1,4 @@
-package com.hotpot.chainmodel;
+package com.hotpot.cglib.chainmodel;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -26,19 +26,15 @@ public class NodeChain implements MethodInterceptor{
     }
 
     public Object process() {
-        index++;
-//        if (index > proxyNodes.size()) {
-//            return target;
-//        }
-
-        if (index == proxyNodes.size()) {
+        this.index++;
+        if (this.index == proxyNodes.size()) {
             try {
                 return methodProxy.invokeSuper(target, args);
             } catch (Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
         } else {
-            Node node = proxyNodes.get(index);
+            Node node = proxyNodes.get(this.index);
             return node.process(this);
         }
     }

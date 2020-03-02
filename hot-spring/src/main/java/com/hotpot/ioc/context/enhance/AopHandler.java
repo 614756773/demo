@@ -113,14 +113,21 @@ public class AopHandler implements EnhanceHandler {
         beanMethodMap.forEach((beanName, methodGroup) -> {
             BeanMetadata beanMetadata = beanMap.get(beanName);
             Class clazz = beanMetadata.getClassInstance();
-            Map<String, List<Method>> map = methodGroup.getBeforeMethods();
-            map.forEach((methodName, methods) -> {
-                MethodInterceptorChain chain = new MethodInterceptorChain(methods, null, null);
-                Enhancer enhancer = new Enhancer();
-                enhancer.setSuperclass(clazz);
-                enhancer.setCallback(chain);
-                beanMetadata.replaceBeanInstance(enhancer.create());
-            });
+            Map<String, List<Method>> beforeMethods = methodGroup.getBeforeMethods();
+            Map<String, List<Method>> aroundMethods = methodGroup.getAroundMethods();
+            Map<String, List<Method>> afterMethods = methodGroup.getAfterMethods();
+            MethodInterceptorChain chain = new MethodInterceptorChain(beforeMethods, aroundMethods, afterMethods);
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(clazz);
+            enhancer.setCallback(chain);
+            beanMetadata.replaceBeanInstance(enhancer.create());
+//            map.forEach((methodName, methods) -> {
+//                MethodInterceptorChain chain = new MethodInterceptorChain(methods, null, null);
+//                Enhancer enhancer = new Enhancer();
+//                enhancer.setSuperclass(clazz);
+//                enhancer.setCallback(chain);
+//                beanMetadata.replaceBeanInstance(enhancer.create());
+//            });
         });
     }
 

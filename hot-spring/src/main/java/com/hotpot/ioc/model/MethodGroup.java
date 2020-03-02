@@ -3,6 +3,7 @@ package com.hotpot.ioc.model;
 import com.hotpot.aop.annotation.After;
 import com.hotpot.aop.annotation.Around;
 import com.hotpot.aop.annotation.Before;
+import com.sun.istack.internal.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -14,8 +15,8 @@ import java.util.Map;
 /**
  * @author qinzhu
  * @since 2020/1/13
- * 一个bean可能会被前、中、后三种模式代理
- * 而一个方法被前置代理时也有可能会被前置增强两次，同理中、后代理也是一样的
+ * 一个bean可能会被前、环绕、后三种模式代理
+ * 而一个方法被前置代理时也有可能会被前置增强多次，同理环绕、后代理也是一样的
  */
 public class MethodGroup {
     /**
@@ -50,17 +51,16 @@ public class MethodGroup {
     }
 
     /**
-     *
      * @param targetMethodName 被代理方法的名称
-     * @param parameterTypes 被代理方法的参数类型
-     * @param proxyMethod 需要织入的method
+     * @param parameterTypes   被代理方法的参数类型
+     * @param proxyMethod      需要织入的method
      */
     public void addMethod(Class<? extends Annotation> annotationClass, String targetMethodName, Class<?>[] parameterTypes, Method proxyMethod) {
         if (annotationClass == Before.class) {
             addBeforeMethod(targetMethodName, parameterTypes, proxyMethod);
         } else if (annotationClass == Around.class) {
             addAroundMethods(targetMethodName, parameterTypes, proxyMethod);
-        } else if(annotationClass == After.class) {
+        } else if (annotationClass == After.class) {
             addAfterMethods(targetMethodName, parameterTypes, proxyMethod);
         }
     }
@@ -89,17 +89,19 @@ public class MethodGroup {
     }
 
     /**
-     *
      * @return 返回值如下：
      * run:java.lang.String,java.lang,Integer 或者 run:
      */
-    private String generateKey(String targetMethodName, Class<?>[] parameterTypes) {
+    private String generateKey(String targetMethodName, @Nullable Class<?>[] parameterTypes) {
         StringBuilder sb = new StringBuilder(targetMethodName).append(":");
+        if (parameterTypes == null || parameterTypes.length == 0) {
+            return sb.toString();
+        }
         for (Class<?> parameterType : parameterTypes) {
             sb.append(parameterType.getName());
             sb.append(",");
         }
-        String result = sb.toString();
-        return result.substring(0, result.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 }

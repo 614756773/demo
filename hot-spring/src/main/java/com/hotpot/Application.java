@@ -11,5 +11,8 @@ public class Application {
     public static void main(String[] args) {
         StudentController controller = ContextFactory.getBean(StudentController.class);
         controller.saveStudent("小米");
+        System.out.println();
+        System.out.println();
+        controller.saveStudent("大米");
     }
 }

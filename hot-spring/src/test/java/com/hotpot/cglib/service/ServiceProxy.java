@@ -1,4 +1,4 @@
-package com.hotpot.ioc;
+package com.hotpot.cglib.service;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;

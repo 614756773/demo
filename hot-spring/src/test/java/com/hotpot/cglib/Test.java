@@ -1,12 +1,11 @@
-package com.hotpot;
+package com.hotpot.cglib;
 
-import com.hotpot.chainmodel.Node;
-import com.hotpot.chainmodel.NodeA;
-import com.hotpot.chainmodel.NodeB;
-import com.hotpot.chainmodel.NodeChain;
-import com.hotpot.ioc.Service;
-import com.hotpot.ioc.ServiceProxy;
-import com.hotpot.ioc.utils.ClassScanner;
+import com.hotpot.cglib.chainmodel.Node;
+import com.hotpot.cglib.chainmodel.NodeA;
+import com.hotpot.cglib.chainmodel.NodeB;
+import com.hotpot.cglib.chainmodel.NodeChain;
+import com.hotpot.cglib.service.Service;
+import com.hotpot.cglib.service.ServiceProxy;
 import net.sf.cglib.proxy.Enhancer;
 
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ public class Test {
     public static void main(String[] args) {
         cglibChainTest();
 //        cglibTest();
-//        ClassScanner.listClass("net.sf.cglib");
     }
 
     private static void cglibChainTest() {
@@ -34,7 +32,7 @@ public class Test {
         enhancer.setCallback(chain);
 
         Service service = (Service) enhancer.create();
-        String result = service.run();
+        String result = service.stop();
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {

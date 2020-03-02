@@ -19,7 +19,7 @@ public interface EnhanceHandler {
 
     /**
      * 具体的处理方法
-     * @param beanMap ioc容器中的bean，key为className，value为bean对象
+     * @param beanMap ioc容器中的bean，key为className，value为bean及其元数据
      */
     void handle(Map<String, BeanMetadata> beanMap, Map<String, Class> classMap);
 

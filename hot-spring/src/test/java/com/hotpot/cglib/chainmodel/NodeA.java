@@ -1,4 +1,4 @@
-package com.hotpot.chainmodel;
+package com.hotpot.cglib.chainmodel;
 
 /**
  * @author qinzhu
@@ -8,22 +8,19 @@ public class NodeA implements Node {
 
     @Override
     public Object process(NodeChain chain) {
-        Object result;
         before();
-        result = chain.process();
+        Object result = chain.process();
         after();
         return result;
     }
 
     @Override
-    public Object before() {
+    public void before() {
         System.out.println("NodeA代理：before");
-        return null;
     }
 
     @Override
-    public Object after() {
+    public void after() {
         System.out.println("NodeA代理：after");
-        return null;
     }
 }

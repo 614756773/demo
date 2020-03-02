@@ -1,5 +1,6 @@
 package com.hotpot.test;
 
+import com.hotpot.aop.annotation.After;
 import com.hotpot.aop.annotation.Aspect;
 import com.hotpot.aop.annotation.Before;
 import com.hotpot.aop.annotation.Pointcut;
@@ -20,6 +21,11 @@ public class DemoAspect {
 
     @Before("pointcut()")
     public void before() {
-        System.out.println("执行之前");
+        System.out.println("方法执行前----");
+    }
+
+    @After("pointcut()")
+    public void after() {
+        System.out.println("方法执行后----");
     }
 }

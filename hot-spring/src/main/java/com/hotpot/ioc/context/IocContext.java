@@ -23,23 +23,18 @@ public class IocContext implements ContextInterface {
 
     private Map<String, Class> classMap;
 
-    private List<EnhanceHandler> enhanceHandlers;
-
     protected IocContext(List<EnhanceHandler> enhanceHandlers) {
-        this.enhanceHandlers = enhanceHandlers;
-        this.enhanceHandlers.sort(Comparator.comparingInt(EnhanceHandler::getPriority));
+        enhanceHandlers.sort(Comparator.comparingInt(EnhanceHandler::getPriority));
         try {
             // 1.注册bean
             registerBean();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        // 2.注入bean
+        // 2.子类实现更丰富的操作（比如aop，权限校验等）
+        enhanceHandlers.forEach(e -> e.handle(this.beanMap, this.classMap));
+        // 3.注入bean
         assembleBean();
-        // 3.子类实现更丰富的操作（比如aop，权限校验等）
-        this.enhanceHandlers.forEach(e -> e.handle(this.beanMap, this.classMap));
-        // 使用后就手动释放，毕竟增强处理器只会使用一次
-        this.enhanceHandlers = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -81,7 +76,7 @@ public class IocContext implements ContextInterface {
     /**
      * 实例化，如果没有注解或者是抽象类/接口 则不予实例化
      */
-    private void instanceSingleBean(Collection<String> beanClass) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    private void instanceSingleBean(Set<String> beanClass) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         for (String className : beanClass) {
             Class<?> aClass = Class.forName(className);
             if (!aClass.isAnnotationPresent(Component.class)) {
@@ -104,16 +99,16 @@ public class IocContext implements ContextInterface {
      * value为bean
      */
     private void cacheBean(String beanClassName, BeanMetadata beanMetadata, @Nullable Class<?>[] interfaces, @Nullable Class<?> superclass) {
-        List<String> list = new ArrayList<>();
-        list.add(beanClassName);
+        List<String> keys = new ArrayList<>();
+        keys.add(beanClassName);
         if (interfaces != null && interfaces.length != 0) {
-            Stream.of(interfaces).forEach(e -> list.add(e.getName()));
+            Stream.of(interfaces).forEach(e -> keys.add(e.getName()));
         }
         if (superclass != null && superclass != Object.class) {
-            list.add(superclass.getName());
+            keys.add(superclass.getName());
         }
 
-        list.forEach(className -> {
+        keys.forEach(className -> {
             Object existedBean = beanMap.get(className);
             if (existedBean != null) {
                 throw new RuntimeException("required a single bean, but more were found:\n" +

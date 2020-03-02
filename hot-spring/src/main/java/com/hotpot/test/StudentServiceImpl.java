@@ -11,7 +11,7 @@ import java.util.Set;
  */
 @Component
 public class StudentServiceImpl implements StudentService {
-    private Set<String> set = new HashSet<String>();
+    private Set<String> set = new HashSet<>();
 
     @Override
     public void save(String name) {
