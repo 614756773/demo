@@ -89,8 +89,8 @@ public class MethodGroup {
     }
 
     /**
-     * @return 返回值如下：
-     * run:java.lang.String,java.lang,Integer 或者 run:
+     * 根据方法名和参数类型生成key
+     * @return run:java.lang.String,java.lang,Integer 或者 run:
      */
     private String generateKey(String targetMethodName, @Nullable Class<?>[] parameterTypes) {
         StringBuilder sb = new StringBuilder(targetMethodName).append(":");

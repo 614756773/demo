@@ -1,5 +1,6 @@
 package com.hotpot.cglib.chainmodel;
 
+import com.hotpot.exception.HotSpringException;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -31,7 +32,7 @@ public class NodeChain implements MethodInterceptor{
             try {
                 return methodProxy.invokeSuper(target, args);
             } catch (Throwable throwable) {
-                throw new RuntimeException(throwable);
+                throw new HotSpringException(throwable);
             }
         } else {
             Node node = proxyNodes.get(this.index);

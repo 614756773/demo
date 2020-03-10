@@ -1,5 +1,6 @@
 package com.hotpot.ioc.context;
 
+import com.hotpot.exception.HotSpringException;
 import com.hotpot.ioc.annotation.Autowired;
 import com.hotpot.ioc.annotation.Component;
 import com.hotpot.ioc.context.enhance.EnhanceHandler;
@@ -29,7 +30,7 @@ public class IocContext implements ContextInterface {
             // 1.注册bean
             registerBean();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new HotSpringException(e);
         }
         // 2.子类实现更丰富的操作（比如aop，权限校验等）
         enhanceHandlers.forEach(e -> e.handle(this.beanMap, this.classMap));
@@ -111,7 +112,7 @@ public class IocContext implements ContextInterface {
         keys.forEach(className -> {
             Object existedBean = beanMap.get(className);
             if (existedBean != null) {
-                throw new RuntimeException("required a single bean, but more were found:\n" +
+                throw new HotSpringException("required a single bean, but more were found:\n" +
                         "- " + beanClassName + "\n" +
                         "- " + existedBean.getClass().getName());
             }

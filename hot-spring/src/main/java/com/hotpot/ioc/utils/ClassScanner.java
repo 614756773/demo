@@ -1,5 +1,7 @@
 package com.hotpot.ioc.utils;
 
+import com.hotpot.exception.HotSpringException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -34,7 +36,7 @@ public class ClassScanner {
         } else if ("jar".equals(protocol)) {
             return jarModelScan(url);
         }
-        throw new RuntimeException("不支持的类型");
+        throw new HotSpringException("不支持的类型");
     }
 
     /**
@@ -50,7 +52,7 @@ public class ClassScanner {
             try {
                 result.put(className, Class.forName(className));
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new HotSpringException(e);
             }
         });
         return result;
@@ -64,7 +66,7 @@ public class ClassScanner {
         try {
             jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new HotSpringException(e);
         }
         Map<String, Class> result = new HashMap<>(16);
         Enumeration<JarEntry> entry = jarFile.entries();
