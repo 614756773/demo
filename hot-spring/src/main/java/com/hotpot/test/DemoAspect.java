@@ -14,52 +14,51 @@ import com.hotpot.ioc.annotation.Component;
 @Aspect
 public class DemoAspect {
 
-    @Pointcut(classRegex = "com\\.hotpot\\.test\\..+", methodRegex = "save\\(.*\\)")
+    @Pointcut(classRegex = "com\\.hotpot\\.test\\..+", methodRegex = "get\\(.*\\)")
     public void pointcut() {
 
     }
 
     @Around("pointcut()")
     public void around(ProceedingJoinPoint joinPoint) {
-        System.out.println("around-----前");
+        System.out.println("around1--前，获取到参数[" + getArgsString(joinPoint) + "]");
         Object result = joinPoint.process();
-        System.out.println("around-----后，返回结果：" + result);
+        System.out.println("around1--后，返回结果：[" + result + "]");
     }
 
     @Around("pointcut()")
     public void around2(ProceedingJoinPoint joinPoint) {
-        System.out.println("around2-----前");
+        System.out.println("around2--前，获取到参数为[" + getArgsString(joinPoint) + "]");
         Object result = joinPoint.process();
-        System.out.println("around2-----后，返回结果：" + result);
+        System.out.println("around2--后，返回结果：[" + result + "]");
     }
 
     @Before("pointcut()")
-    public void before(JoinPoint joinPoint) {
+    public void beforeA(JoinPoint joinPoint) {
+        System.out.println("beforeA，获取到参数为[" + getArgsString(joinPoint) + "]");
+    }
+
+    @Before("pointcut()")
+    public void beforeB(JoinPoint joinPoint) {
+        System.out.println("beforeB，获取到参数为[" + getArgsString(joinPoint) + "]");
+    }
+
+    @After("pointcut()")
+    public void after(JoinPoint joinPoint) {
+        System.out.println("afterA，获取到参数为：[" + getArgsString(joinPoint) + "]");
+    }
+
+    @After("pointcut()")
+    public void afterB(JoinPoint joinPoint) {
+        System.out.println("afterB，获取到参数为：[" + getArgsString(joinPoint) + "]");
+    }
+
+    private StringBuilder getArgsString(JoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
         StringBuilder sb = new StringBuilder();
         for (Object arg : args) {
             sb.append(arg).append(",");
         }
-        System.out.println("方法执行前，获取到参数为：" + sb.deleteCharAt(sb.length() - 1));
+        return sb.deleteCharAt(sb.length() - 1);
     }
-
-    @Before("pointcut()")
-    public void before2(JoinPoint joinPoint) {
-        Object[] args = joinPoint.getArgs();
-        StringBuilder sb = new StringBuilder();
-        for (Object arg : args) {
-            sb.append(arg).append(",");
-        }
-        System.out.println("方法执行前2，获取到参数为：" + sb.deleteCharAt(sb.length() - 1));
-    }
-//
-//    @After("pointcut()")
-//    public void after(JoinPoint joinPoint) {
-//        Object[] args = joinPoint.getArgs();
-//        StringBuilder sb = new StringBuilder();
-//        for (Object arg : args) {
-//            sb.append(arg).append(",");
-//        }
-//        System.out.println("方法执行后，获取到参数为：" + sb.deleteCharAt(sb.length() - 1));
-//    }
 }

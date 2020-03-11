@@ -21,11 +21,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public String get(String name) {
-        if (!set.contains(name)) {
-            System.out.println("不存在学生：" + name);
-            return null;
-        }
-        System.out.println("已获取学生：" + name);
-        return name;
+        System.err.println("调用StudentServiceImpl的方法");
+        return name.toUpperCase();
     }
 }

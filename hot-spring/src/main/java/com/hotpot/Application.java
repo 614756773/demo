@@ -10,7 +10,7 @@ import com.hotpot.test.StudentController;
 public class Application {
     public static void main(String[] args) {
         StudentController controller = ContextFactory.getBean(StudentController.class);
-        controller.saveStudent("小米");
-        System.out.println();
+        String wtf = controller.getStudent("wtf");
+        System.out.println(wtf);
     }
 }
