@@ -31,10 +31,10 @@ public class TimeClient {
                 }
             });
 
-            // Start the client.
+            // 启动客户端
             ChannelFuture f = b.connect(host, port).sync();
 
-            // Wait until the connection is closed.
+            // 等待服务端主动发送关闭信号
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
