@@ -1,6 +1,7 @@
 package com.hotpot;
 
 import com.hotpot.ioc.context.ContextFactory;
+import com.hotpot.mvc.HttpServer;
 import com.hotpot.test.StudentController;
 
 /**
@@ -12,5 +13,8 @@ public class Application {
         StudentController controller = ContextFactory.getBean(StudentController.class);
         String wtf = controller.getStudent("wtf");
         System.out.println(wtf);
+
+        HttpServer server = ContextFactory.getBean(HttpServer.class);
+        server.run(8080);
     }
 }
