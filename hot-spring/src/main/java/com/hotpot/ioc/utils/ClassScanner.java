@@ -17,15 +17,29 @@ import java.util.jar.JarFile;
 public class ClassScanner {
 
     /**
-     * (packageName, (className, class))
+     * 描述：使用静态变量作为缓存，当一个包被扫描一次后 下一次就直接能够获取到，不需要再次扫苗
+     * 格式：(packageName, (className, class))
      */
     private static Map<String, Map<String, Class>> cache = new HashMap<>();
 
     /**
      * 根据包名扫描所有class文件
+     * key -> 类名, value -> Class对象
      */
     public synchronized static Map<String, Class> listClass(String packageName) {
         return cache.computeIfAbsent(packageName, ClassScanner::scanClass);
+    }
+
+    /**
+     * 根据包名扫描所有class文件
+     * key -> 类名, value -> Class对象
+     */
+    public static Map<String, Class> listClass(String[] packageNames) {
+        Map<String, Class> result = new HashMap<>();
+        for (String packageName : packageNames) {
+            result.putAll(cache.computeIfAbsent(packageName, ClassScanner::scanClass));
+        }
+        return result;
     }
 
     private static Map<String, Class> scanClass(String packageName) {

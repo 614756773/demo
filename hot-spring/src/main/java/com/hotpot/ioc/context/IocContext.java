@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * @since 2020/1/6
  */
 public class IocContext implements ContextInterface {
-    private final String basePackage = "com.hotpot.test";
+    private final String[] basePackage = new String[]{"com.hotpot.test", "com.hotpot.mvc"};
 
     private Map<String, BeanMetadata> beanMap = new HashMap<>();
 
