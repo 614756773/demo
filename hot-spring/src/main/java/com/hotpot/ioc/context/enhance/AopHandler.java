@@ -1,7 +1,7 @@
 package com.hotpot.ioc.context.enhance;
 
-import com.hotpot.aop.cglib.MethodInterceptorChain;
 import com.hotpot.aop.annotation.*;
+import com.hotpot.aop.cglib.MethodInterceptorChain;
 import com.hotpot.aop.model.PointcutMetadata;
 import com.hotpot.aop.model.joinpoint.ProceedingJoinPoint;
 import com.hotpot.aop.model.joinpoint.SimpleJoinPoint;
@@ -28,11 +28,6 @@ public class AopHandler implements EnhanceHandler {
      * key -> origin bean名称，value 需要被代理的方法
      */
     private Map<String, MethodGroup> beanMethodMap = new HashMap<>();
-
-    @Override
-    public int getPriority() {
-        return -1;
-    }
 
     @Override
     public void handle(Map<String, BeanMetadata> beanMap, Map<String, Class> classMap) {
@@ -68,7 +63,7 @@ public class AopHandler implements EnhanceHandler {
                 }
                 if (around != null) {
                     checkProxyMethod(method, Around.class);
-                    aroundMethodMap.put(around.value(),method);
+                    aroundMethodMap.put(around.value(), method);
                 }
                 if (after != null) {
                     checkProxyMethod(method, After.class);
@@ -84,8 +79,9 @@ public class AopHandler implements EnhanceHandler {
 
     /**
      * 遍历bean，找到匹配切入点的method，缓存在{@code beanMethodMap}中
+     *
      * @param pointcutMap key -> 名称，形如"pointcut()"     value -> PointcutMetadata
-     * @param methodMap key -> 切入点名称，形如"pointcut()"       value -> 代理方法
+     * @param methodMap   key -> 切入点名称，形如"pointcut()"       value -> 代理方法
      */
     private void findBeanMethodForProxy(Map<String, PointcutMetadata> pointcutMap, Map<String, Method> methodMap, Class<? extends Annotation> annotationClass) {
         methodMap.forEach((pointcut, proxyMethod) -> this.beanMap.keySet().stream()

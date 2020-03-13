@@ -9,6 +9,7 @@ import com.hotpot.test.StudentController;
  * @since 2020/1/6
  */
 public class Application {
+
     public static void main(String[] args) {
         StudentController controller = ContextFactory.getBean(StudentController.class);
         String wtf = controller.getStudent("wtf");
