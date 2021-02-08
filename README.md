@@ -1,8 +1,5 @@
-# 呼吁
-- 希望本仓库有更多的demo，便于参考学习，欢迎大家fork，pull request
-- 上传的demo需要满足以下两点
-    - 有README
-    - 能够运行
+# 描述
+本repo是各种quick start代码
 ---
 <BR><BR>
 
