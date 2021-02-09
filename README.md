@@ -48,3 +48,6 @@
 - [x] ioc
 - [ ] aop
 - [ ] mvc
+
+### shardingjdbc
+- [x] 分库分表
