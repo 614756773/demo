@@ -11,3 +11,6 @@ sharding-jdbc quick start工程
 
 
 [官方demo](https://github.com/apache/shardingsphere-example)
+
+[官方demo最新](https://github.com/apache/shardingsphere/blob/master/examples/shardingsphere-jdbc-example)
+
