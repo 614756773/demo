@@ -51,3 +51,4 @@
 
 ### shardingjdbc
 - [x] 分库分表
+- [X] XA事务
