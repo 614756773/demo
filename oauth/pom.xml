@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <spring-boot>2.0.4.RELEASE</spring-boot>
+        <spring-boot>2.5.12</spring-boot>
     </properties>
     <dependencies>
         <dependency>
